@@ -1,0 +1,11 @@
+{
+  "width": 400,
+  "height": 400,
+  "stickiness": 0.5,
+  "moveRadius": 2.0,
+  "particleRadius": 4.0,
+  "numParticles": 200,
+  "maxParticles": 300,
+  "respawnParticles": true,
+  "seed": 0
+}
