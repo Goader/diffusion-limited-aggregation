@@ -7,6 +7,7 @@
 
 #include "simulation_config.h"
 #include "random_engine.cuh"
+#include "particle.cuh"
 #include <vector>
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
@@ -18,16 +19,17 @@
 class Simulation {
     const SimulationConfig config;
     RandomEngine rng;
+    thrust::device_vector<Particle*> dev_particlesActive;
+    thrust::device_vector<Particle*> dev_particlesFrozen;
 
-    thrust::device_vector<float> particlesX;
-    thrust::device_vector<float> particlesY;
-    thrust::device_vector<bool> particlesActive;
+    const unsigned int BLOCK_SIZE = 256;
+    unsigned int numBlocks;
 
     public:
         explicit Simulation(const SimulationConfig& config);
+        ~Simulation();
+        void initParticles();
         void step();
-        [[nodiscard]] std::vector<int> getParticlesX() const;
-        [[nodiscard]] std::vector<int> getParticlesY() const;
         [[nodiscard]] bool isFinished() const;
 };
 

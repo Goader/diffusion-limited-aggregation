@@ -35,7 +35,5 @@ int main(int argc, char** argv) {
         simulation.step();
     }
 
-    std::cout << simulation.getValue() << std::endl;
-
     return 0;
 }
