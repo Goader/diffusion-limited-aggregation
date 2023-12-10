@@ -9,6 +9,7 @@ set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
 
 if(CMAKE_CUDA_COMPILER)
     enable_language(CUDA)
+    message(STATUS "CUDA found")
 else()
     message(STATUS "CUDA not found")
 endif()

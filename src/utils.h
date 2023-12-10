@@ -5,7 +5,7 @@
 #ifndef DIFFUSION_LIMITED_AGGREGATION_UTILS_H
 #define DIFFUSION_LIMITED_AGGREGATION_UTILS_H
 
-#include "simulation_config.h"
+#include "simulation_config.cuh"
 #include <string>
 #include <fstream>
 #include <nlohmann/json.hpp>

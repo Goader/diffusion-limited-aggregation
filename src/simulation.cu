@@ -5,54 +5,98 @@
 #include "simulation.cuh"
 
 
-Simulation::Simulation(const SimulationConfig& config) : config(config) {
-    rng = RandomEngine(config);
-    numBlocks = (config.numParticles + BLOCK_SIZE - 1) / BLOCK_SIZE;
+Simulation::Simulation(const SimulationConfig& config) : config(config), rng(config) {
+    h_particles = new Particle[config.numParticles];
+    initParticles();
+
+    d_allFrozen = nullptr;
+    d_particles = nullptr;
+    d_states = nullptr;
+
+    numBlocks1d = (config.numParticles + BLOCK_SIZE_1D - 1) / BLOCK_SIZE_1D;
+    numBlocks2d = (config.numParticles + BLOCK_SIZE_2D - 1) / BLOCK_SIZE_2D;
 }
 
 Simulation::~Simulation() {
-    cudaFree(thrust::raw_pointer_cast(dev_particlesActive.data()));
-}
-
-__global__ void initParticlesKernel(Particle* particles, RandomEngine rng, const SimulationConfig& config) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < config.numParticles) {
-        new (&particles[idx]) Particle(config, rng);
-    }
+    delete[] h_particles;
+    cudaFree(d_particles);
+    cudaFree(d_states);
+    cudaFree(d_allFrozen);
 }
 
 void Simulation::initParticles() {
-    Particle* rawPtr;
-    cudaMalloc(&rawPtr, config.numParticles * sizeof(Particle));
+    // todo upgrade this logic - take this from config, for example
+    int frozenParticles = 1;
+    h_particles[0].x = config.width / 2;
+    h_particles[0].y = config.height / 2;
+    h_particles[0].isActive = false;
 
-    initParticlesKernel<<<numBlocks, BLOCK_SIZE>>>(rawPtr, rng, config);
-
-    std::vector<Particle*> host_particles(config.numParticles);
-    for (int i = 0; i < config.numParticles; ++i) {
-        host_particles[i] = rawPtr + i;
+    for (int i = frozenParticles; i < config.numParticles; i++) {
+        auto x = rng.generateParticleX();
+        auto y = rng.generateParticleY();
+        h_particles[i].x = x;
+        h_particles[i].y = y;
+        h_particles[i].isActive = true;
     }
-    dev_particlesActive = thrust::device_vector<Particle*>(host_particles.begin(), host_particles.end());
 }
 
-__global__ void moveParticlesKernel(Particle* particles, int numParticles) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < numParticles) {
-        particles[idx].move();
-    }
+void Simulation::setupCuda() {
+    cudaMalloc(&d_allFrozen, sizeof(bool));
+
+    cudaMalloc(&d_states, config.numParticles * sizeof(curandState));
+    setupRandomStatesKernel<<<numBlocks1d, BLOCK_SIZE_1D>>>(d_states, config.seed);
+//    cudaDeviceSynchronize();
+//    cudaError_t error = cudaGetLastError();
+//    if(error != cudaSuccess)
+//    {
+//        // print the CUDA error message and exit
+//        printf("CUDA error: %s\n", cudaGetErrorString(error));
+//        exit(-1);
+//    }
+//    else {
+//        printf("Success!\n");
+//    }
+
+    cudaMalloc(&d_particles, config.numParticles * sizeof(Particle));
+    cudaMemcpy(d_particles, h_particles,
+               config.numParticles * sizeof(Particle), cudaMemcpyHostToDevice);
 }
 
 void Simulation::step() {
-    moveParticlesKernel<<<numBlocks, BLOCK_SIZE>>>(dev_particlesActive, config.numParticles);
+    moveParticlesKernel<<<numBlocks1d, BLOCK_SIZE_1D>>>(
+            d_particles,
+            config.numParticles,
+//            config,
+            d_states
+    );
+
+    cudaMemset(d_allFrozen, 1, sizeof(bool));  // set d_allFrozen to true
+    dim3 gridDims(numBlocks2d, numBlocks2d); dim3 blockDims(BLOCK_SIZE_2D, BLOCK_SIZE_2D);
+    checkCollisionsKernel<<<gridDims, blockDims>>>(
+            d_particles,
+            config.numParticles,
+//            config,
+            d_allFrozen
+    );
+
+    cudaDeviceSynchronize();  // waiting for the d_allFrozen to be updated
+    cudaMemcpy(&h_allFrozen, d_allFrozen, sizeof(bool), cudaMemcpyDeviceToHost);
+}
+
+std::vector<Particle> Simulation::getParticles() {
     cudaDeviceSynchronize();
-    // todo: handle state updates needed after particle movement (collisions)
+    cudaMemcpy(h_particles, d_particles,
+               config.numParticles * sizeof(Particle), cudaMemcpyDeviceToHost);
+
+    // copy the particles to a vector
+    std::vector<Particle> particles;
+    particles.reserve(config.numParticles);
+    for (int i = 0; i < config.numParticles; i++) {
+        particles.push_back(h_particles[i]);
+    }
+    return particles;
 }
 
 bool Simulation::isFinished() const {
-//    bool anyActive = thrust::reduce(
-//        particlesActive.begin(),
-//        particlesActive.end(),
-//        false,
-//        thrust::logical_or<bool>()
-//    );
-    return false;
+    return h_allFrozen;
 }

@@ -1,7 +1,7 @@
 set(SOURCE
     ${SOURCE}
     ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/simulation_config.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/simulation_config.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/simulation.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/random_engine.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/particle.cu
@@ -11,7 +11,7 @@ set(SOURCE
 
 set(HEADERS
     ${HEADERS}
-    ${CMAKE_CURRENT_SOURCE_DIR}/simulation_config.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/simulation_config.cuh
     ${CMAKE_CURRENT_SOURCE_DIR}/simulation.cuh
     ${CMAKE_CURRENT_SOURCE_DIR}/random_engine.cuh
     ${CMAKE_CURRENT_SOURCE_DIR}/particle.cuh

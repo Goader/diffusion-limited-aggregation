@@ -5,9 +5,10 @@
 #ifndef DIFFUSION_LIMITED_AGGREGATION_RANDOM_ENGINE_CUH
 #define DIFFUSION_LIMITED_AGGREGATION_RANDOM_ENGINE_CUH
 
-#include "simulation_config.h"
+#include "simulation_config.cuh"
 #include <thrust/random.h>
 
+// todo: get rid of thrust dependency?
 class RandomEngine {
     thrust::default_random_engine engine;
     thrust::uniform_real_distribution<float> particleXDist;
