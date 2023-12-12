@@ -30,6 +30,7 @@ void Simulation::initParticles() {
     h_particles[0].x = config.width / 2;
     h_particles[0].y = config.height / 2;
     h_particles[0].isActive = false;
+    h_particles[0].isSticky = true;
 
     for (int i = frozenParticles; i < config.numParticles; i++) {
         auto x = rng.generateParticleX();
@@ -37,6 +38,7 @@ void Simulation::initParticles() {
         h_particles[i].x = x;
         h_particles[i].y = y;
         h_particles[i].isActive = true;
+        h_particles[i].isSticky = true;
     }
 }
 
@@ -45,6 +47,7 @@ void Simulation::setupCuda() {
 
     cudaMalloc(&d_states, config.numParticles * sizeof(curandState));
     setupRandomStatesKernel<<<numBlocks1d, BLOCK_SIZE_1D>>>(d_states, config.seed);
+
 //    cudaDeviceSynchronize();
 //    cudaError_t error = cudaGetLastError();
 //    if(error != cudaSuccess)
@@ -65,8 +68,7 @@ void Simulation::setupCuda() {
 void Simulation::step() {
     moveParticlesKernel<<<numBlocks1d, BLOCK_SIZE_1D>>>(
             d_particles,
-            config.numParticles,
-//            config,
+            config,
             d_states
     );
 
@@ -74,13 +76,14 @@ void Simulation::step() {
     dim3 gridDims(numBlocks2d, numBlocks2d); dim3 blockDims(BLOCK_SIZE_2D, BLOCK_SIZE_2D);
     checkCollisionsKernel<<<gridDims, blockDims>>>(
             d_particles,
-            config.numParticles,
-//            config,
+            config,
             d_allFrozen
     );
 
     cudaDeviceSynchronize();  // waiting for the d_allFrozen to be updated
     cudaMemcpy(&h_allFrozen, d_allFrozen, sizeof(bool), cudaMemcpyDeviceToHost);
+
+    current_step++;
 }
 
 std::vector<Particle> Simulation::getParticles() {
@@ -95,6 +98,10 @@ std::vector<Particle> Simulation::getParticles() {
         particles.push_back(h_particles[i]);
     }
     return particles;
+}
+
+int Simulation::getCurrentStep() const {
+    return current_step;
 }
 
 bool Simulation::isFinished() const {

@@ -13,6 +13,7 @@
 struct Particle {
     float x, y;
     bool isActive;
+    bool isSticky;
 };
 
 
@@ -21,13 +22,11 @@ __global__ void setupRandomStatesKernel(curandState* states, unsigned long seed)
 __device__ void randomMove(float moveRadius, float* dx, float* dy, curandState* state);
 
 __global__ void moveParticlesKernel(Particle* particles,
-                                    int numParticles,
-//                                    const SimulationConfig& config,
+                                    SimulationConfig config,
                                     curandState* states);
 
 __global__ void checkCollisionsKernel(Particle* particles,
-                                      int numParticles,
-//                                      const SimulationConfig& config,
+                                      SimulationConfig config,
                                       bool* allFrozen);
 
 #endif //DIFFUSION_LIMITED_AGGREGATION_PARTICLE_CUH

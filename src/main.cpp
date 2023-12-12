@@ -32,9 +32,11 @@ int main(int argc, char** argv) {
     auto simulation = Simulation(config);
     simulation.setupCuda();
 
-//    int step = 0;
+    auto start_time = std::chrono::high_resolution_clock::now();
     while (!simulation.isFinished()) {
         simulation.step();
+
+        int step = simulation.getCurrentStep();
 
         // count frozen particles
 //        auto particles = simulation.getParticles();
@@ -44,21 +46,26 @@ int main(int argc, char** argv) {
 //                frozenParticles++;
 //            }
 //        }
-//
-////        std::cout << "Particles[0]: " << particles[0].x << ", " << particles[0].y << ", " << particles[0].isActive << std::endl;
-////        std::cout << "Particles[1]: " << particles[1].x << ", " << particles[1].y << ", " << particles[1].isActive << std::endl;
-//
+
+//        std::cout << "Particles[0]: " << particles[0].x << ", " << particles[0].y << ", " << particles[0].isActive << std::endl;
+//        std::cout << "Particles[1]: " << particles[1].x << ", " << particles[1].y << ", " << particles[1].isActive << std::endl;
+
 //        if (step < 1000 && step % 1 == 0) {
 //            std::cout << "Step " << step << std::endl;
 //            std::cout << "Frozen particles: " << frozenParticles << std::endl;
 //        }
 //
-//        step++;
-//        if (step % 100 == 0 && frozenParticles < 200) {
-//            std::cout << "Step " << step << std::endl;
+        if (step % 1000 == 0) {
+            std::cout << "Step " << step << std::endl;
 //            std::cout << "Frozen particles: " << frozenParticles << std::endl;
-//        }
+        }
     }
+
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+
+    std::cout << "Simulation finished in " << duration / 1000 << "s " << duration % 1000 << "ms." << std::endl;
+    std::cout << "Number of steps: " << simulation.getCurrentStep() << std::endl;
 
     // write to csv
     std::ofstream csvFile;

@@ -13,9 +13,11 @@
 
 class Simulation {
     const SimulationConfig config;
-    RandomEngine rng;
+    int current_step = 0;
     bool h_allFrozen = false;
     bool* d_allFrozen;
+
+    RandomEngine rng;
 
     const unsigned int BLOCK_SIZE_1D = 1024;
     const unsigned int BLOCK_SIZE_2D = 32;
@@ -32,7 +34,8 @@ class Simulation {
         void initParticles();
         void setupCuda();
         void step();
-        std::vector<Particle> getParticles();
+        [[nodiscard]] int getCurrentStep() const;
+        [[nodiscard]] std::vector<Particle> getParticles();
         [[nodiscard]] bool isFinished() const;
 };
 

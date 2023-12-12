@@ -5,8 +5,8 @@ import dla
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument('--width', type=int, default=300, help='width of the canvas')
-    parser.add_argument('--height', type=int, default=300, help='height of the canvas')
+    parser.add_argument('--width', type=int, default=400, help='width of the canvas')
+    parser.add_argument('--height', type=int, default=400, help='height of the canvas')
     parser.add_argument('--stickiness', type=float, default=0.5, help='probability of sticking to the tree')
     parser.add_argument('--move-radius', type=float, default=2.0, help='radius of the movement')
     parser.add_argument('--particle-radius', type=float, default=4.0, help='radius of the particle')
