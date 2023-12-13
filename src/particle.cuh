@@ -14,6 +14,7 @@ struct Particle {
     float x, y;
     bool isActive;
     bool isSticky;
+    int frozenAtStep;
 };
 
 
@@ -27,6 +28,7 @@ __global__ void moveParticlesKernel(Particle* particles,
 
 __global__ void checkCollisionsKernel(Particle* particles,
                                       SimulationConfig config,
-                                      bool* allFrozen);
+                                      bool* allFrozen,
+                                      int currentStep);
 
 #endif //DIFFUSION_LIMITED_AGGREGATION_PARTICLE_CUH

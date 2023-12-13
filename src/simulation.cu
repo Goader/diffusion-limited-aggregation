@@ -31,6 +31,7 @@ void Simulation::initParticles() {
     h_particles[0].y = config.height / 2;
     h_particles[0].isActive = false;
     h_particles[0].isSticky = true;
+    h_particles[0].frozenAtStep = -1;
 
     for (int i = frozenParticles; i < config.numParticles; i++) {
         auto x = rng.generateParticleX();
@@ -39,6 +40,7 @@ void Simulation::initParticles() {
         h_particles[i].y = y;
         h_particles[i].isActive = true;
         h_particles[i].isSticky = true;
+        h_particles[i].frozenAtStep = -100;
     }
 }
 
@@ -77,7 +79,8 @@ void Simulation::step() {
     checkCollisionsKernel<<<gridDims, blockDims>>>(
             d_particles,
             config,
-            d_allFrozen
+            d_allFrozen,
+            current_step
     );
 
     cudaDeviceSynchronize();  // waiting for the d_allFrozen to be updated

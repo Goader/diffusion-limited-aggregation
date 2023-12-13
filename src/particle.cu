@@ -50,7 +50,8 @@ __global__ void moveParticlesKernel(Particle* particles,
 
 __global__ void checkCollisionsKernel(Particle* particles,
                                       SimulationConfig config,
-                                      bool* allFrozen) {
+                                      bool* allFrozen,
+                                      int currentStep) {
     int xIdx = blockIdx.x * blockDim.x + threadIdx.x;
     int yIdx = blockIdx.y * blockDim.y + threadIdx.y;
 
@@ -88,6 +89,7 @@ __global__ void checkCollisionsKernel(Particle* particles,
     }
 
     activeParticle->isActive = false;
+    activeParticle->frozenAtStep = currentStep;
 
     // adjust the particle's position to be on the surface of the frozen particle
     // todo: implement this
