@@ -11,6 +11,7 @@ const GLchar* vertexShaderSource = R"glsl(
     layout (location = 0) in vec2 position;
     void main() {
         gl_Position = vec4(position, 0.0, 1.0);
+        gl_PointSize = 4.0;
     }
 )glsl";
 
@@ -18,7 +19,7 @@ const GLchar* fragmentShaderSource = R"glsl(
     #version 330 core
     out vec4 FragColor;
     void main() {
-        FragColor = vec4(0.5, 0.0, 0.5, 1.0); // Purple color
+        FragColor = vec4(0.0, 1.0, 0.0, 1.0);
     }
 )glsl";
 
@@ -64,6 +65,10 @@ void visualizeSimulation(const std::vector<Particle>& particles, const Simulatio
         return;
     }
 
+    if (GLEW_VERSION_1_3) {
+        std::cout << "OpenGL 1.3 supported" << std::endl;
+    }
+
     // Compile shaders
     GLuint vertexShader = compileShader(GL_VERTEX_SHADER, vertexShaderSource);
     GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentShaderSource);
@@ -74,16 +79,17 @@ void visualizeSimulation(const std::vector<Particle>& particles, const Simulatio
     glUseProgram(shaderProgram);
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
-
+    glEnable(GL_PROGRAM_POINT_SIZE);
+    
     GLuint vao, vbo;
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
 
     glBindVertexArray(vao);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(Particle) * particles.size(), NULL, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(ParticlePos) * particles.size(), NULL, GL_DYNAMIC_DRAW);
 
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(Particle), (void*)offsetof(Particle, x));
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(ParticlePos), (void*)0);
     glEnableVertexAttribArray(0);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0); 
@@ -95,45 +101,65 @@ void visualizeSimulation(const std::vector<Particle>& particles, const Simulatio
         return a.frozenAtStep > b.frozenAtStep;
     });
 
+    std::cout << "Sorted top: " << sortedParticles.front().frozenAtStep << " end: " << sortedParticles.back().frozenAtStep << std::endl;
+
     // Create a stack for particles
     std::stack<Particle> particleStack;
     for (const auto& particle : sortedParticles) {
         particleStack.push(particle);
     }
 
+    std::vector<ParticlePos> particlePositionsToDraw;
+
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);  // white background
+
     // Visualization loop
-    for (int step = 0; step <= lastStep && !glfwWindowShouldClose(window); step++) {
+    for (int step = -1; step <= lastStep && !glfwWindowShouldClose(window); step++) {
         glClear(GL_COLOR_BUFFER_BIT);
 
         if (step % 1000 == 0) {
-            std::cout << "Vis step " << step << std::endl;
+            std::cout << "Vis step " << step << "   Stack size: " << particleStack.size() << std::endl;
         }
 
-        std::vector<Particle> particlesToDraw;
-
         while (!particleStack.empty() && particleStack.top().frozenAtStep == step) {
-            particlesToDraw.push_back(particleStack.top());
+            auto &p = particleStack.top();
+            particlePositionsToDraw.push_back({(p.x / config.width) * 2.0f - 1.0f, (p.y / config.height) * 2.0f - 1.0f});
             particleStack.pop();
         }
 
-        if (!particlesToDraw.empty()) {
-            glBindBuffer(GL_ARRAY_BUFFER, vbo);
-            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Particle) * particlesToDraw.size(), particlesToDraw.data());
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(ParticlePos) * particlePositionsToDraw.size(), particlePositionsToDraw.data());
 
-            glUseProgram(shaderProgram);
-            glBindVertexArray(vao);
+        glUseProgram(shaderProgram);
+        glBindVertexArray(vao);
 
-            glDrawArrays(GL_POINTS, 0, particlesToDraw.size());
+        glDrawArrays(GL_POINTS, 0, particlePositionsToDraw.size());
 
-            glBindVertexArray(0);
-        }
+        glBindVertexArray(0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
 
-    while(!glfwWindowShouldClose(window)) {}
+    // Keep displaying the final state until the window is closed
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(ParticlePos) * particlePositionsToDraw.size(), particlePositionsToDraw.data());
 
+    while (!glfwWindowShouldClose(window)) {
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        glUseProgram(shaderProgram);
+        glBindVertexArray(vao);
+
+        glDrawArrays(GL_POINTS, 0, particlePositionsToDraw.size());
+
+        glBindVertexArray(0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // Cleanup
     glDeleteVertexArrays(1, &vao);
     glDeleteBuffers(1, &vbo);
     glDeleteProgram(shaderProgram);
