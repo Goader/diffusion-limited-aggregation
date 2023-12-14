@@ -6,7 +6,7 @@
 #include "simulation_config.cuh"
 
 
-struct ParticlePos {
+struct GLParticle {
     float x, y;
 };
 
