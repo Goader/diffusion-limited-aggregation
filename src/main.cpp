@@ -4,6 +4,11 @@
 
 #include <filesystem>
 #include <iostream>
+
+#include <GL/glew.h>  // include first
+#include <GLFW/glfw3.h>
+
+
 #include "utils.h"
 #include "simulation.cuh"
 
