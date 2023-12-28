@@ -6,6 +6,7 @@ set(SOURCE
     ${CMAKE_CURRENT_SOURCE_DIR}/random_engine.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/particle.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/utils.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/visualization.cpp
     PARENT_SCOPE
 )
 
@@ -16,5 +17,6 @@ set(HEADERS
     ${CMAKE_CURRENT_SOURCE_DIR}/random_engine.cuh
     ${CMAKE_CURRENT_SOURCE_DIR}/particle.cuh
     ${CMAKE_CURRENT_SOURCE_DIR}/utils.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/visualization.h
     PARENT_SCOPE
 )

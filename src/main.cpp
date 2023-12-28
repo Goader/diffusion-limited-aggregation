@@ -4,8 +4,14 @@
 
 #include <filesystem>
 #include <iostream>
+
+#include <GL/glew.h>  // include first
+#include <GLFW/glfw3.h>
+
+
 #include "utils.h"
 #include "simulation.cuh"
+#include "visualization.h"
 
 int main(int argc, char** argv) {
     if (argc != 2) {
@@ -63,9 +69,11 @@ int main(int argc, char** argv) {
 
     auto end_time = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+    int lastStep = simulation.getCurrentStep();
 
     std::cout << "Simulation finished in " << duration / 1000 << "s " << duration % 1000 << "ms." << std::endl;
-    std::cout << "Number of steps: " << simulation.getCurrentStep() << std::endl;
+    std::cout << "Number of steps: " << lastStep + 1 << std::endl;
+
 
     // write to csv
     std::ofstream csvFile;
@@ -75,6 +83,9 @@ int main(int argc, char** argv) {
         csvFile << particle.x << "," << particle.y << std::endl;
     }
     csvFile.close();
+
+    // visualize
+    visualizeSimulation(simulation.getParticles(), config, lastStep);
 
     return 0;
 }

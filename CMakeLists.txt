@@ -17,11 +17,16 @@ endif()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CUDA_STANDARD 20)
 
-include_directories(${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES})
+include_directories(${CMAKE_CUDA_TOOLKIT_INCLUDE_DIRECTORIES} ${OPENGL_INCLUDE_DIR} ${GLFW_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS})
 
-find_package(nlohmann_json 3.2.0 REQUIRED)
+find_package(nlohmann_json 3.2.0 REQUIRED)  # json
+find_package(OpenGL REQUIRED)  # OpenGL
+find_package(glfw3 REQUIRED)  # GLFW - bare necessities for interaction with OpenGL
+find_package(GLEW REQUIRED)  # GLEW - OpenGL + extensions loader
 
 add_subdirectory(src)
 add_executable(diffusion_limited_aggregation ${SOURCE} ${HEADERS})
 
-target_link_libraries(diffusion_limited_aggregation PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(
+    diffusion_limited_aggregation PRIVATE ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} glfw nlohmann_json::nlohmann_json
+    )
