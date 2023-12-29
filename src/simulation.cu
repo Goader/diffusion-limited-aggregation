@@ -7,7 +7,6 @@
 
 Simulation::Simulation(const SimulationConfig& config) : config(config), rng(config) {
     h_particles = new Particle[config.numParticles];
-    initParticles();
 
     d_allFrozen = nullptr;
     d_particles = nullptr;
@@ -24,18 +23,24 @@ Simulation::~Simulation() {
     cudaFree(d_allFrozen);
 }
 
-void Simulation::initParticles() {
-    // todo upgrade this logic - take this from config, for example
-    int frozenParticles = 1;
-    h_particles[0].x = config.width / 2;
-    h_particles[0].y = config.height / 2;
-    h_particles[0].isActive = false;
-    h_particles[0].frozenAtStep = -1;
-    h_particles[0].collidedParticleIdx = -1;
+void Simulation::initParticles(std::vector<Particle> initialParticles) {
+    size_t frozenParticles = initialParticles.size();
 
-    for (int i = frozenParticles; i < config.numParticles; i++) {
+    for (int i = 0; i < frozenParticles; i++) {
+        h_particles[i].oldX = initialParticles[i].oldX;
+        h_particles[i].oldY = initialParticles[i].oldY;
+        h_particles[i].x = initialParticles[i].x;
+        h_particles[i].y = initialParticles[i].y;
+        h_particles[i].isActive = initialParticles[i].isActive;
+        h_particles[i].frozenAtStep = initialParticles[i].frozenAtStep;
+        h_particles[i].collidedParticleIdx = initialParticles[i].collidedParticleIdx;
+    }
+
+    for (size_t i = frozenParticles; i < config.numParticles; i++) {
         auto x = rng.generateParticleX();
         auto y = rng.generateParticleY();
+        h_particles[i].oldX = x;
+        h_particles[i].oldY = y;
         h_particles[i].x = x;
         h_particles[i].y = y;
         h_particles[i].isActive = true;
@@ -44,6 +49,7 @@ void Simulation::initParticles() {
     }
 }
 
+// must be called after initParticles
 void Simulation::setupCuda() {
     cudaMalloc(&d_allFrozen, sizeof(bool));
 

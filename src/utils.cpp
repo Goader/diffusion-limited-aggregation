@@ -16,7 +16,23 @@ SimulationConfig parseConfig(const std::string& filename) {
                             j["moveRadius"],
                             j["particleRadius"],
                             j["numParticles"],
-                            j["maxParticles"],
-                            j["respawnParticles"],
                             j["seed"]);
+}
+
+std::vector<Particle> parseInitialParticles(const std::string& filename) {
+    std::ifstream file(filename);
+    json j;
+    file >> j;
+
+    auto initialParticles = j["initialParticles"];
+    std::vector<Particle> initialParticlesVector;
+    for (auto& initialParticle : initialParticles) {
+        initialParticlesVector.push_back(
+                Particle(initialParticle["x"], initialParticle["y"],
+                         initialParticle["x"], initialParticle["y"],
+                         false, -1, -1)
+        );
+    }
+
+    return initialParticlesVector;
 }

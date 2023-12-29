@@ -13,6 +13,8 @@
 #define __device__
 #endif
 
+#include <vector>
+
 
 class SimulationConfig {
     public:
@@ -22,10 +24,7 @@ class SimulationConfig {
         const float moveRadius;
         const float particleRadius;
         const int numParticles;
-        const int maxParticles;
-        const bool respawnParticles;
         const int seed;
-
 
         __host__ __device__ SimulationConfig(int width,
                                              int height,
@@ -33,8 +32,6 @@ class SimulationConfig {
                                              float moveRadius,
                                              float particleRadius,
                                              int numParticles,
-                                             int maxParticles,
-                                             bool respawnParticles,
                                              int seed);
 
         __host__ __device__ SimulationConfig(const SimulationConfig& config);
