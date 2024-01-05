@@ -81,6 +81,7 @@ __global__ void moveParticlesKernel(Particle* particles,
     int xGridIdx = static_cast<int>(particle->x);
     int yGridIdx = static_cast<int>(particle->y);
 
+    // add force drag
     dx += forceFieldX[yGridIdx * config.width + xGridIdx];
     dy += forceFieldY[yGridIdx * config.width + xGridIdx];
 

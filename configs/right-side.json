@@ -8,7 +8,14 @@
   "seed": 0,
 
   "forceRectangles": [
-
+    {
+      "xTopLeft": 0,
+      "yTopLeft": 0,
+      "recWidth": 800,
+      "recHeight": 800,
+      "dragRadius": 0.1,
+      "dragAngle": 0.0
+    }
   ],
   
   "initialParticles": [

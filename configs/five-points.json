@@ -10,11 +10,19 @@
   "forceRectangles": [
     {
       "xTopLeft": 0,
-      "yTopLeft": 0,
+      "yTopLeft": 200,
       "recWidth": 400,
-      "recHeight": 400,
-      "dragRadius": 0.1,
-      "dragAngle":3.14159
+      "recHeight": 200,
+      "dragRadius": 0.3,
+      "dragAngle": 4.71
+    },
+    {
+      "xTopLeft": 0,
+      "yTopLeft": 0,
+      "recWidth": 200,
+      "recHeight": 200,
+      "dragRadius": 0.3,
+      "dragAngle": 1.57
     }
   ],
 
