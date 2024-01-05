@@ -16,5 +16,6 @@ SimulationConfig parseConfig(const std::string& filename);
 
 std::vector<Particle> parseInitialParticles(const std::string& filename);
 
+std::pair<float*, float*> parseForceField(const std::string& filename, int width, int height);
 
 #endif //DIFFUSION_LIMITED_AGGREGATION_UTILS_H

@@ -7,6 +7,17 @@
   "numParticles": 500,
   "seed": 0,
 
+  "forceRectangles": [
+    {
+      "xTopLeft": 0,
+      "yTopLeft": 0,
+      "recWidth": 400,
+      "recHeight": 400,
+      "dragRadius": 0.1,
+      "dragAngle":3.14159
+    }
+  ],
+
   "initialParticles": [
     {
       "x": 200,

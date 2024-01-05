@@ -21,11 +21,11 @@ struct Particle {
 
 __global__ void setupRandomStatesKernel(curandState* states, unsigned long seed);
 
-__device__ void randomMove(float moveRadius, float* dx, float* dy, curandState* state);
-
 __global__ void moveParticlesKernel(Particle* particles,
                                     SimulationConfig config,
-                                    curandState* states);
+                                    curandState* states,
+                                    float* forceFieldX, 
+                                    float* forceFieldY);
 
 __global__ void checkCollisionsKernel(Particle* particles,
                                       SimulationConfig config);

@@ -28,10 +28,14 @@ class Simulation {
     Particle *d_particles;
     curandState *d_states;
 
+    float *d_forceFieldX;
+    float *d_forceFieldY;
+
     public:
         explicit Simulation(const SimulationConfig& config);
         ~Simulation();
         void initParticles(std::vector<Particle> initialParticles);
+        void setupCudaForceField(float* forceFieldX, float* forceFieldY);
         void setupCuda();
         void step();
         [[nodiscard]] int getCurrentStep() const;

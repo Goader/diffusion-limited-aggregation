@@ -12,6 +12,9 @@ Simulation::Simulation(const SimulationConfig& config) : config(config), rng(con
     d_particles = nullptr;
     d_states = nullptr;
 
+    d_forceFieldX = nullptr;
+    d_forceFieldY = nullptr;
+
     numBlocks1d = (config.numParticles + BLOCK_SIZE_1D - 1) / BLOCK_SIZE_1D;
     numBlocks2d = (config.numParticles + BLOCK_SIZE_2D - 1) / BLOCK_SIZE_2D;
 }
@@ -21,6 +24,8 @@ Simulation::~Simulation() {
     cudaFree(d_particles);
     cudaFree(d_states);
     cudaFree(d_allFrozen);
+    cudaFree(d_forceFieldX);
+    cudaFree(d_forceFieldY);
 }
 
 void Simulation::initParticles(std::vector<Particle> initialParticles) {
@@ -48,6 +53,14 @@ void Simulation::initParticles(std::vector<Particle> initialParticles) {
         h_particles[i].collidedParticleIdx = -1;
     }
 }
+
+void Simulation::setupCudaForceField(float* forceFieldX, float* forceFieldY) {
+        cudaMalloc(&d_forceFieldX, config.width * config.height * sizeof(float));
+        cudaMemcpy(d_forceFieldX, forceFieldX, config.width * config.height * sizeof(float), cudaMemcpyHostToDevice);
+
+        cudaMalloc(&d_forceFieldY, config.width * config.height * sizeof(float));
+        cudaMemcpy(d_forceFieldY, forceFieldY, config.width * config.height * sizeof(float), cudaMemcpyHostToDevice);
+    }
 
 // must be called after initParticles
 void Simulation::setupCuda() {
@@ -77,7 +90,9 @@ void Simulation::step() {
     moveParticlesKernel<<<numBlocks1d, BLOCK_SIZE_1D>>>(
             d_particles,
             config,
-            d_states
+            d_states,
+            d_forceFieldX,
+            d_forceFieldY
     );
 
     cudaMemset(d_allFrozen, 1, sizeof(bool));  // set d_allFrozen to true

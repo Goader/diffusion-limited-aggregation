@@ -63,7 +63,9 @@ __device__ void surfaceCollisionPoint(float xa, float ya,  // active particle
 
 __global__ void moveParticlesKernel(Particle* particles,
                                     SimulationConfig config,
-                                    curandState* states) {
+                                    curandState* states, 
+                                    float* forceFieldX, 
+                                    float* forceFieldY) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
     // guard against out of bounds access and inactive particles
@@ -75,6 +77,12 @@ __global__ void moveParticlesKernel(Particle* particles,
     // generate random move
     float dx, dy;
     randomMove(config.moveRadius, &dx, &dy, &states[idx]);
+
+    int xGridIdx = static_cast<int>(particle->x);
+    int yGridIdx = static_cast<int>(particle->y);
+
+    dx += forceFieldX[yGridIdx * config.width + xGridIdx];
+    dy += forceFieldY[yGridIdx * config.width + xGridIdx];
 
     // save the old position
     particle->oldX = particle->x;
@@ -94,7 +102,7 @@ __global__ void checkCollisionsKernel(Particle* particles,
     int xIdx = blockIdx.x * blockDim.x + threadIdx.x;
     int yIdx = blockIdx.y * blockDim.y + threadIdx.y;
 
-    // guard against out of bounds access and inactive particles
+    // guard against out of bounds access and duplication
     if (xIdx >= config.numParticles || yIdx >= config.numParticles || xIdx >= yIdx) {
         return;
     }
@@ -113,7 +121,7 @@ __global__ void checkCollisionsKernel(Particle* particles,
 
     auto squaredDistance = pow(frozenParticle->x - activeParticle->x, 2)
                               + pow(frozenParticle->y - activeParticle->y, 2);
-    auto freezeRadiusSquared = pow(config.particleRadius * 2, 2);
+    auto freezeRadiusSquared = pow(config.particleRadius * 2, 2);  // todo: make it a parameter (?)
 
     // if the particle is not within the freeze radius of the frozen particle, it cannot freeze
     if (squaredDistance > freezeRadiusSquared) {
@@ -194,6 +202,7 @@ __global__ void freezeParticlesKernel(Particle* particles,
         return;
     }
 
+    // if the particle is sticky, it will freeze to the frozen particle
     activeParticle->isActive = false;
     activeParticle->frozenAtStep = currentStep;
 

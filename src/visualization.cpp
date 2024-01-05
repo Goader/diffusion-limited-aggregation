@@ -149,7 +149,7 @@ void visualizeSimulation(const std::vector<Particle>& particles, const Simulatio
 
     glUseProgram(shaderProgram);
 
-    const int SKIP_STEPS_SIZE = 50;
+    const int SKIP_STEPS_SIZE = 8;
 
     // Visualization loop
     for (int step = -1; step <= lastStep + SKIP_STEPS_SIZE && !glfwWindowShouldClose(window); step += SKIP_STEPS_SIZE) {

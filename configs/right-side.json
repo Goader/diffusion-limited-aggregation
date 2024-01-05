@@ -7,6 +7,10 @@
   "numParticles": 1000,
   "seed": 0,
 
+  "forceRectangles": [
+
+  ],
+  
   "initialParticles": [
     {
       "x": 800,

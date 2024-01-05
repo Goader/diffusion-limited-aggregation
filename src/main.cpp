@@ -36,9 +36,11 @@ int main(int argc, char** argv) {
 
     SimulationConfig config = parseConfig(argv[1]);
     std::vector<Particle> initialParticles = parseInitialParticles(argv[1]);
+    auto [forceFieldX, forceFieldY] = parseForceField(argv[1], config.width, config.height);
 
     auto simulation = Simulation(config);
     simulation.initParticles(initialParticles);
+    simulation.setupCudaForceField(forceFieldX, forceFieldY);
     simulation.setupCuda();
 
 
@@ -87,6 +89,10 @@ int main(int argc, char** argv) {
         csvFile << particle.x << "," << particle.y << std::endl;
     }
     csvFile.close();
+
+    // clean up host fields
+    delete[] forceFieldX;
+    delete[] forceFieldY;
 
     // visualize
     visualizeSimulation(simulation.getParticles(), config, lastStep);
