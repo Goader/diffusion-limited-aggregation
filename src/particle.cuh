@@ -11,10 +11,11 @@
 #include <curand_kernel.h>
 
 struct Particle {
+    float oldX, oldY;
     float x, y;
     bool isActive;
-    bool isSticky;
     int frozenAtStep;
+    int collidedParticleIdx;
 };
 
 
@@ -27,7 +28,11 @@ __global__ void moveParticlesKernel(Particle* particles,
                                     curandState* states);
 
 __global__ void checkCollisionsKernel(Particle* particles,
+                                      SimulationConfig config);
+
+__global__ void freezeParticlesKernel(Particle* particles,
                                       SimulationConfig config,
+                                      curandState* states,
                                       bool* allFrozen,
                                       int currentStep);
 

@@ -35,8 +35,12 @@ int main(int argc, char** argv) {
     }
 
     SimulationConfig config = parseConfig(argv[1]);
+    std::vector<Particle> initialParticles = parseInitialParticles(argv[1]);
+
     auto simulation = Simulation(config);
+    simulation.initParticles(initialParticles);
     simulation.setupCuda();
+
 
     auto start_time = std::chrono::high_resolution_clock::now();
     while (!simulation.isFinished()) {

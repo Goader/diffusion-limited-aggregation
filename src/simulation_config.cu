@@ -4,14 +4,13 @@
 
 #include "simulation_config.cuh"
 
+
 __host__ __device__ SimulationConfig::SimulationConfig(const int width,
                                                        const int height,
                                                        const float stickiness,
                                                        const float moveRadius,
                                                        const float particleRadius,
                                                        const int numParticles,
-                                                       const int maxParticles,
-                                                       const bool respawnParticles,
                                                        const int seed)
         : width(width),
           height(height),
@@ -19,8 +18,6 @@ __host__ __device__ SimulationConfig::SimulationConfig(const int width,
           moveRadius(moveRadius),
           particleRadius(particleRadius),
           numParticles(numParticles),
-          maxParticles(maxParticles),
-          respawnParticles(respawnParticles),
           seed(seed) {}
 
 __host__ __device__ SimulationConfig::SimulationConfig(const SimulationConfig &config) = default;

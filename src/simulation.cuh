@@ -31,7 +31,7 @@ class Simulation {
     public:
         explicit Simulation(const SimulationConfig& config);
         ~Simulation();
-        void initParticles();
+        void initParticles(std::vector<Particle> initialParticles);
         void setupCuda();
         void step();
         [[nodiscard]] int getCurrentStep() const;
