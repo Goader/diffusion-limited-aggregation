@@ -11,6 +11,7 @@ __host__ __device__ SimulationConfig::SimulationConfig(const int width,
                                                        const float moveRadius,
                                                        const float particleRadius,
                                                        const int numParticles,
+                                                       const int numObstacles,
                                                        const int seed)
         : width(width),
           height(height),
@@ -18,6 +19,7 @@ __host__ __device__ SimulationConfig::SimulationConfig(const int width,
           moveRadius(moveRadius),
           particleRadius(particleRadius),
           numParticles(numParticles),
+          numObstacles(numObstacles),
           seed(seed) {}
 
 __host__ __device__ SimulationConfig::SimulationConfig(const SimulationConfig &config) = default;

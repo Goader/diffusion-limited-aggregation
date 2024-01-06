@@ -24,6 +24,7 @@ class SimulationConfig {
         const float moveRadius;
         const float particleRadius;
         const int numParticles;
+        const int numObstacles;
         const int seed;
 
         __host__ __device__ SimulationConfig(int width,
@@ -32,6 +33,7 @@ class SimulationConfig {
                                              float moveRadius,
                                              float particleRadius,
                                              int numParticles,
+                                             int numObstacles,
                                              int seed);
 
         __host__ __device__ SimulationConfig(const SimulationConfig& config);

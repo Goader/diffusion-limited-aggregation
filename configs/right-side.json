@@ -7,6 +7,26 @@
   "numParticles": 1000,
   "seed": 0,
 
+  "forceRectangles": [
+    {
+      "xTopLeft": 0,
+      "yTopLeft": 0,
+      "recWidth": 800,
+      "recHeight": 800,
+      "dragRadius": 0.1,
+      "dragAngle": 0.0
+    }
+  ],
+
+  "obstacleRectangles": [
+    {
+      "xTopLeft": 400,
+      "yTopLeft": 300,
+      "recWidth": 400,
+      "recHeight": 200
+    }
+  ],
+  
   "initialParticles": [
     {
       "x": 800,

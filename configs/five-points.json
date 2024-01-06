@@ -7,6 +7,40 @@
   "numParticles": 500,
   "seed": 0,
 
+  "forceRectangles": [
+    {
+      "xTopLeft": 0,
+      "yTopLeft": 200,
+      "recWidth": 400,
+      "recHeight": 200,
+      "dragRadius": 0.3,
+      "dragAngle": 4.71
+    },
+    {
+      "xTopLeft": 0,
+      "yTopLeft": 0,
+      "recWidth": 200,
+      "recHeight": 200,
+      "dragRadius": 0.3,
+      "dragAngle": 1.57
+    }
+  ],
+
+  "obstacleRectangles": [
+    {
+      "xTopLeft": 200,
+      "yTopLeft": 200,
+      "recWidth": 50,
+      "recHeight": 50
+    },
+    {
+      "xTopLeft": 0,
+      "yTopLeft": 0,
+      "recWidth": 50,
+      "recHeight": 50
+    }
+  ],
+
   "initialParticles": [
     {
       "x": 200,

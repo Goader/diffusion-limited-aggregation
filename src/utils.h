@@ -7,6 +7,7 @@
 
 #include "simulation_config.cuh"
 #include "particle.cuh"
+#include "obstacle.cuh"
 #include <string>
 #include <fstream>
 #include <vector>
@@ -16,5 +17,8 @@ SimulationConfig parseConfig(const std::string& filename);
 
 std::vector<Particle> parseInitialParticles(const std::string& filename);
 
+std::pair<float*, float*> parseForceField(const std::string& filename, int width, int height);
+
+std::vector<Obstacle> parseObstacles(const std::string& filename);
 
 #endif //DIFFUSION_LIMITED_AGGREGATION_UTILS_H
