@@ -7,8 +7,10 @@
 
 #include "simulation_config.cuh"
 #include "random_engine.cuh"
+#include "obstacle.cuh"
 #include <cmath>
 #include <curand_kernel.h>
+
 
 struct Particle {
     float oldX, oldY;
@@ -25,7 +27,8 @@ __global__ void moveParticlesKernel(Particle* particles,
                                     SimulationConfig config,
                                     curandState* states,
                                     float* forceFieldX, 
-                                    float* forceFieldY);
+                                    float* forceFieldY,
+                                    Obstacle* obstacles);
 
 __global__ void checkCollisionsKernel(Particle* particles,
                                       SimulationConfig config);

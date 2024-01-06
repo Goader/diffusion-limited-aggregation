@@ -14,6 +14,7 @@ Simulation::Simulation(const SimulationConfig& config) : config(config), rng(con
 
     d_forceFieldX = nullptr;
     d_forceFieldY = nullptr;
+    d_obstacles = nullptr;
 
     numBlocks1d = (config.numParticles + BLOCK_SIZE_1D - 1) / BLOCK_SIZE_1D;
     numBlocks2d = (config.numParticles + BLOCK_SIZE_2D - 1) / BLOCK_SIZE_2D;
@@ -26,6 +27,7 @@ Simulation::~Simulation() {
     cudaFree(d_allFrozen);
     cudaFree(d_forceFieldX);
     cudaFree(d_forceFieldY);
+    cudaFree(d_obstacles);
 }
 
 void Simulation::initParticles(std::vector<Particle> initialParticles) {
@@ -60,7 +62,40 @@ void Simulation::setupCudaForceField(float* forceFieldX, float* forceFieldY) {
 
         cudaMalloc(&d_forceFieldY, config.width * config.height * sizeof(float));
         cudaMemcpy(d_forceFieldY, forceFieldY, config.width * config.height * sizeof(float), cudaMemcpyHostToDevice);
+}
+
+
+void Simulation::setupCudaObstacles(std::vector<Obstacle> obstacles) {
+    size_t numObstacles = obstacles.size();
+    
+    auto h_obstacles = new Obstacle[numObstacles];
+    for (int i = 0; i < numObstacles; i++) {
+        h_obstacles[i].xTopLeft = obstacles[i].xTopLeft;
+        h_obstacles[i].yTopLeft = obstacles[i].yTopLeft;
+        h_obstacles[i].recHeight = obstacles[i].recHeight;
+        h_obstacles[i].recWidth = obstacles[i].recWidth;
     }
+
+    cudaError_t err;
+
+    err = cudaMalloc(&d_obstacles, numObstacles * sizeof(Obstacle));
+    if (err != cudaSuccess) {
+        printf("CUDA error: %s\n", cudaGetErrorString(err));
+        delete[] h_obstacles;
+        return;
+    }
+    
+    err = cudaMemcpy(d_obstacles, h_obstacles, numObstacles * sizeof(Obstacle), cudaMemcpyHostToDevice);
+    if (err != cudaSuccess) {
+        printf("CUDA error: %s\n", cudaGetErrorString(err));
+        cudaFree(d_obstacles);
+        delete[] h_obstacles;
+        return;
+    }
+
+    delete[] h_obstacles;
+}
+
 
 // must be called after initParticles
 void Simulation::setupCuda() {
@@ -92,7 +127,8 @@ void Simulation::step() {
             config,
             d_states,
             d_forceFieldX,
-            d_forceFieldY
+            d_forceFieldY,
+            d_obstacles
     );
 
     cudaMemset(d_allFrozen, 1, sizeof(bool));  // set d_allFrozen to true

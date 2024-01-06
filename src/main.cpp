@@ -37,12 +37,19 @@ int main(int argc, char** argv) {
     SimulationConfig config = parseConfig(argv[1]);
     std::vector<Particle> initialParticles = parseInitialParticles(argv[1]);
     auto [forceFieldX, forceFieldY] = parseForceField(argv[1], config.width, config.height);
+    std::vector<Obstacle> obstacles = parseObstacles(argv[1]);
 
     auto simulation = Simulation(config);
+
+    // todo: initParticles should not place particles inside obstacles
     simulation.initParticles(initialParticles);
     simulation.setupCudaForceField(forceFieldX, forceFieldY);
+    simulation.setupCudaObstacles(obstacles);
     simulation.setupCuda();
 
+    // clean up host force fields
+    delete[] forceFieldX;
+    delete[] forceFieldY;
 
     auto start_time = std::chrono::high_resolution_clock::now();
     while (!simulation.isFinished()) {
@@ -89,10 +96,6 @@ int main(int argc, char** argv) {
         csvFile << particle.x << "," << particle.y << std::endl;
     }
     csvFile.close();
-
-    // clean up host fields
-    delete[] forceFieldX;
-    delete[] forceFieldY;
 
     // visualize
     visualizeSimulation(simulation.getParticles(), config, lastStep);

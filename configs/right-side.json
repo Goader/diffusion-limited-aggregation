@@ -17,6 +17,15 @@
       "dragAngle": 0.0
     }
   ],
+
+  "obstacleRectangles": [
+    {
+      "xTopLeft": 400,
+      "yTopLeft": 300,
+      "recWidth": 400,
+      "recHeight": 200
+    }
+  ],
   
   "initialParticles": [
     {

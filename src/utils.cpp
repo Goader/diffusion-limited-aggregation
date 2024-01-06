@@ -10,12 +10,14 @@ SimulationConfig parseConfig(const std::string& filename) {
     std::ifstream file(filename);
     json j;
     file >> j;
+
     return SimulationConfig(j["width"],
                             j["height"],
                             j["stickiness"],
                             j["moveRadius"],
                             j["particleRadius"],
                             j["numParticles"],
+                            j["obstacleRectangles"].size(),
                             j["seed"]);
 }
 
@@ -66,4 +68,22 @@ std::pair<float*, float*> parseForceField(const std::string& filename, int width
     }
 
     return {forceFieldX, forceFieldY};
+}
+
+std::vector<Obstacle> parseObstacles(const std::string& filename) {
+    std::ifstream file(filename);
+    json j;
+    file >> j;
+
+    auto obstacleRectangles = j["obstacleRectangles"];
+    std::vector<Obstacle> obstacles;
+    for (auto& rectangle : obstacleRectangles) {
+        int xTopLeft = rectangle["xTopLeft"];
+        int yTopLeft = rectangle["yTopLeft"];
+        int recWidth = rectangle["recWidth"];
+        int recHeight = rectangle["recHeight"];
+        obstacles.push_back(Obstacle(xTopLeft, yTopLeft, recWidth, recHeight));
+    }
+
+    return obstacles;
 }

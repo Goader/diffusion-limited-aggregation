@@ -65,7 +65,8 @@ __global__ void moveParticlesKernel(Particle* particles,
                                     SimulationConfig config,
                                     curandState* states, 
                                     float* forceFieldX, 
-                                    float* forceFieldY) {
+                                    float* forceFieldY,
+                                    Obstacle* obstacles) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
 
     // guard against out of bounds access and inactive particles
@@ -80,10 +81,11 @@ __global__ void moveParticlesKernel(Particle* particles,
 
     int xGridIdx = static_cast<int>(particle->x);
     int yGridIdx = static_cast<int>(particle->y);
+    int gridIdx = yGridIdx * config.width + xGridIdx;
 
     // add force drag
-    dx += forceFieldX[yGridIdx * config.width + xGridIdx];
-    dy += forceFieldY[yGridIdx * config.width + xGridIdx];
+    dx += forceFieldX[gridIdx];
+    dy += forceFieldY[gridIdx];
 
     // save the old position
     particle->oldX = particle->x;
@@ -92,6 +94,91 @@ __global__ void moveParticlesKernel(Particle* particles,
     // move the particle
     particle->x += dx;
     particle->y += dy;
+
+
+    // todo: check if the code below is correct (fix if needed) and extract it to a separate function (?)
+
+    // handle obstacle collision and reflection
+    for (int i = 0; i < config.numObstacles; i++) {
+        auto obstacle = obstacles + i;
+
+        float obstacleLeftX = static_cast<float>(obstacle->xTopLeft);
+        float obstacleRightX = static_cast<float>(obstacle->xTopLeft + obstacle->recWidth);
+        float obstacleTopY = static_cast<float>(obstacle->yTopLeft);
+        float obstacleBottomY = static_cast<float>(obstacle->yTopLeft + obstacle->recHeight);
+
+        // check if the particle is within the obstacle
+        if (particle->x >= obstacleLeftX && particle->x <= obstacleRightX &&
+            particle->y >= obstacleTopY && particle->y <= obstacleBottomY) {
+
+            // todo: remove after fixing initial particle positions
+            if (particle->oldX >= obstacleLeftX && particle->oldX <= obstacleRightX &&
+                particle->oldY >= obstacleTopY && particle->oldY <= obstacleBottomY) {
+                break;
+            }
+
+            // calculate the line equation of the particle's trajectory
+            float slope = dy / dx;
+            float intercept = particle->oldY - slope * particle->oldX;
+
+            float collisionX, collisionY;
+            float minDistance = 1111.1f;
+            float edgeX[4] = {obstacleLeftX, obstacleRightX, particle->x, particle->x};
+            float edgeY[4] = {particle->y, particle->y, obstacleTopY, obstacleBottomY};
+
+            // check intersection with each edge of the obstacle
+            // (the particle will collide with the nearest edge along its trajectory)
+            for (int j = 0; j < 4; j++) {
+                float x = edgeX[j];
+                float y = edgeY[j];
+                if (j < 2) { 
+                    // vertical edges
+                    y = slope * x + intercept;
+                } else { 
+                    // horizontal edges
+                    x = (y - intercept) / slope;
+                }
+                // Check if the intersection is within the bounds of the edge and along the trajectory
+                if (x >= fmin(obstacleLeftX, particle->oldX) && x <= fmax(obstacleRightX, particle->oldX) &&
+                    y >= fmin(obstacleTopY, particle->oldY) && y <= fmax(obstacleBottomY, particle->oldY)) {
+                    float distance = hypot(x - particle->oldX, y - particle->oldY);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        collisionX = x;
+                        collisionY = y;
+                    }
+                }
+            }
+
+            if (minDistance != 1111.1f) {
+                break;
+            }
+
+            // update old coordinates to the collision point
+            particle->oldX = collisionX;
+            particle->oldY = collisionY;
+
+            if (collisionX == obstacleLeftX || collisionX == obstacleRightX) {
+                // reflect horizontally
+                dx = -dx;
+            }
+            else if (collisionY == obstacleTopY || collisionY == obstacleBottomY) {
+                // reflect vertically
+                dy = -dy;
+            }
+            else {
+                return;
+            }
+
+            // update new coordinates
+            float remainingDist = config.moveRadius - minDistance;
+            particle->x = collisionX + dx * remainingDist;
+            particle->y = collisionY + dy * remainingDist;
+            
+            break;
+        }
+    }
+    
 
     // clip the coordinates to stay within the bounds of the simulation
     particle->x = fmax(0.f, fmin(particle->x, static_cast<float>(config.width)));

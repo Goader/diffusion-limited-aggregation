@@ -11,6 +11,10 @@
 
   ],
 
+  "obstacleRectangles": [
+
+  ],
+
   "initialParticles": [
     {
       "x": 200,

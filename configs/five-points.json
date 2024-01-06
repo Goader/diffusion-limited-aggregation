@@ -26,6 +26,21 @@
     }
   ],
 
+  "obstacleRectangles": [
+    {
+      "xTopLeft": 200,
+      "yTopLeft": 200,
+      "recWidth": 50,
+      "recHeight": 50
+    },
+    {
+      "xTopLeft": 0,
+      "yTopLeft": 0,
+      "recWidth": 50,
+      "recHeight": 50
+    }
+  ],
+
   "initialParticles": [
     {
       "x": 200,
