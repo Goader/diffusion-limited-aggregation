@@ -112,6 +112,7 @@ __global__ void moveParticlesKernel(Particle* particles,
             particle->y >= obstacleTopY && particle->y <= obstacleBottomY) {
 
             // todo: remove after fixing initial particle positions
+            // todo bycz
             if (particle->oldX >= obstacleLeftX && particle->oldX <= obstacleRightX &&
                 particle->oldY >= obstacleTopY && particle->oldY <= obstacleBottomY) {
                 break;
@@ -122,7 +123,7 @@ __global__ void moveParticlesKernel(Particle* particles,
             float intercept = particle->oldY - slope * particle->oldX;
 
             float collisionX, collisionY;
-            float minDistance = 1111.1f;
+            float minDistance = 10000.0f;
             float edgeX[4] = {obstacleLeftX, obstacleRightX, particle->x, particle->x};
             float edgeY[4] = {particle->y, particle->y, obstacleTopY, obstacleBottomY};
 
@@ -150,10 +151,6 @@ __global__ void moveParticlesKernel(Particle* particles,
                 }
             }
 
-            if (minDistance != 1111.1f) {
-                break;
-            }
-
             // update old coordinates to the collision point
             particle->oldX = collisionX;
             particle->oldY = collisionY;
@@ -175,10 +172,10 @@ __global__ void moveParticlesKernel(Particle* particles,
             particle->x = collisionX + dx * remainingDist;
             particle->y = collisionY + dy * remainingDist;
             
+            // break after reflecting from obstacle
             break;
         }
     }
-    
 
     // clip the coordinates to stay within the bounds of the simulation
     particle->x = fmax(0.f, fmin(particle->x, static_cast<float>(config.width)));
