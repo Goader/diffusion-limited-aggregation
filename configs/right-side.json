@@ -4,7 +4,7 @@
   "stickiness": 0.5,
   "moveRadius": 2.0,
   "particleRadius": 4.0,
-  "numParticles": 1000,
+  "numParticles": 1500,
   "seed": 0,
 
   "forceRectangles": [
@@ -21,9 +21,9 @@
   "obstacleRectangles": [
     {
       "xTopLeft": 400,
-      "yTopLeft": 300,
-      "recWidth": 400,
-      "recHeight": 200
+      "yTopLeft": 250,
+      "recWidth": 380,
+      "recHeight": 300
     }
   ],
   

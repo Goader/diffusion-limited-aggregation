@@ -30,7 +30,7 @@ Simulation::~Simulation() {
     cudaFree(d_obstacles);
 }
 
-void Simulation::initParticles(std::vector<Particle> initialParticles) {
+void Simulation::initParticles(std::vector<Particle> initialParticles, std::vector<Obstacle> obstacles) {
     size_t frozenParticles = initialParticles.size();
 
     for (int i = 0; i < frozenParticles; i++) {
@@ -46,6 +46,10 @@ void Simulation::initParticles(std::vector<Particle> initialParticles) {
     for (size_t i = frozenParticles; i < config.numParticles; i++) {
         auto x = rng.generateParticleX();
         auto y = rng.generateParticleY();
+        while (isInsideObstacle(x, y, obstacles)) {
+            x = rng.generateParticleX();
+            y = rng.generateParticleY();
+        }
         h_particles[i].oldX = x;
         h_particles[i].oldY = y;
         h_particles[i].x = x;

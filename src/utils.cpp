@@ -87,3 +87,14 @@ std::vector<Obstacle> parseObstacles(const std::string& filename) {
 
     return obstacles;
 }
+
+bool isInsideObstacle(int x, int y, const std::vector<Obstacle>& obstacles) {
+    for (auto& obstacle : obstacles) {
+        if (x >= obstacle.xTopLeft && x <= obstacle.xTopLeft + obstacle.recWidth &&
+            y >= obstacle.yTopLeft && y <= obstacle.yTopLeft + obstacle.recHeight) {
+            return true;
+        }
+    }
+
+    return false;
+}

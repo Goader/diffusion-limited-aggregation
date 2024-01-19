@@ -9,6 +9,7 @@
 #include "random_engine.cuh"
 #include "particle.cuh"
 #include "obstacle.cuh"
+#include "utils.h"
 #include <vector>
 
 
@@ -36,7 +37,7 @@ class Simulation {
     public:
         explicit Simulation(const SimulationConfig& config);
         ~Simulation();
-        void initParticles(std::vector<Particle> initialParticles);
+        void initParticles(std::vector<Particle> initialParticles, std::vector<Obstacle> obstacles);
         void setupCudaForceField(float* forceFieldX, float* forceFieldY);
         void setupCudaObstacles(std::vector<Obstacle> obstacles);
         void setupCuda();

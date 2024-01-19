@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
     auto simulation = Simulation(config);
 
     // todo: initParticles should not place particles inside obstacles
-    simulation.initParticles(initialParticles);
+    simulation.initParticles(initialParticles, obstacles);
     simulation.setupCudaForceField(forceFieldX, forceFieldY);
     simulation.setupCudaObstacles(obstacles);
     simulation.setupCuda();

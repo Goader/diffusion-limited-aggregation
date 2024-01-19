@@ -21,4 +21,6 @@ std::pair<float*, float*> parseForceField(const std::string& filename, int width
 
 std::vector<Obstacle> parseObstacles(const std::string& filename);
 
+bool isInsideObstacle(int x, int y, const std::vector<Obstacle>& obstacles);
+
 #endif //DIFFUSION_LIMITED_AGGREGATION_UTILS_H

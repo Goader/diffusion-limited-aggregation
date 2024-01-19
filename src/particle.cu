@@ -95,9 +95,6 @@ __global__ void moveParticlesKernel(Particle* particles,
     particle->x += dx;
     particle->y += dy;
 
-
-    // todo: check if the code below is correct (fix if needed) and extract it to a separate function (?)
-
     // handle obstacle collision and reflection
     for (int i = 0; i < config.numObstacles; i++) {
         auto obstacle = obstacles + i;
@@ -111,8 +108,7 @@ __global__ void moveParticlesKernel(Particle* particles,
         if (particle->x >= obstacleLeftX && particle->x <= obstacleRightX &&
             particle->y >= obstacleTopY && particle->y <= obstacleBottomY) {
 
-            // todo: remove after fixing initial particle positions
-            // todo bycz
+            // if an obstacle has been inside for at least 2 steps (e.g. due to an initial position in config)
             if (particle->oldX >= obstacleLeftX && particle->oldX <= obstacleRightX &&
                 particle->oldY >= obstacleTopY && particle->oldY <= obstacleBottomY) {
                 break;
@@ -132,13 +128,10 @@ __global__ void moveParticlesKernel(Particle* particles,
             for (int j = 0; j < 4; j++) {
                 float x = edgeX[j];
                 float y = edgeY[j];
-                if (j < 2) { 
-                    // vertical edges
-                    y = slope * x + intercept;
-                } else { 
-                    // horizontal edges
-                    x = (y - intercept) / slope;
-                }
+
+                if (j < 2) {y = slope * x + intercept;}  // vertical edges
+                else {x = (y - intercept) / slope;}  // horizontal edges
+
                 // Check if the intersection is within the bounds of the edge and along the trajectory
                 if (x >= fmin(obstacleLeftX, particle->oldX) && x <= fmax(obstacleRightX, particle->oldX) &&
                     y >= fmin(obstacleTopY, particle->oldY) && y <= fmax(obstacleBottomY, particle->oldY)) {
@@ -155,17 +148,9 @@ __global__ void moveParticlesKernel(Particle* particles,
             particle->oldX = collisionX;
             particle->oldY = collisionY;
 
-            if (collisionX == obstacleLeftX || collisionX == obstacleRightX) {
-                // reflect horizontally
-                dx = -dx;
-            }
-            else if (collisionY == obstacleTopY || collisionY == obstacleBottomY) {
-                // reflect vertically
-                dy = -dy;
-            }
-            else {
-                return;
-            }
+            if (collisionX == obstacleLeftX || collisionX == obstacleRightX) {dx = -dx;}  // reflect horizontally
+            else if (collisionY == obstacleTopY || collisionY == obstacleBottomY) {dy = -dy;}  // reflect vertically
+            else {break;} // should not happen
 
             // update new coordinates
             float remainingDist = config.moveRadius - minDistance;
