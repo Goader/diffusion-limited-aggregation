@@ -12,6 +12,10 @@ Simulation::Simulation(const SimulationConfig& config) : config(config), rng(con
     d_particles = nullptr;
     d_states = nullptr;
 
+    d_forceFieldX = nullptr;
+    d_forceFieldY = nullptr;
+    d_obstacles = nullptr;
+
     numBlocks1d = (config.numParticles + BLOCK_SIZE_1D - 1) / BLOCK_SIZE_1D;
     numBlocks2d = (config.numParticles + BLOCK_SIZE_2D - 1) / BLOCK_SIZE_2D;
 }
@@ -21,9 +25,12 @@ Simulation::~Simulation() {
     cudaFree(d_particles);
     cudaFree(d_states);
     cudaFree(d_allFrozen);
+    cudaFree(d_forceFieldX);
+    cudaFree(d_forceFieldY);
+    cudaFree(d_obstacles);
 }
 
-void Simulation::initParticles(std::vector<Particle> initialParticles) {
+void Simulation::initParticles(std::vector<Particle> initialParticles, std::vector<Obstacle> obstacles) {
     size_t frozenParticles = initialParticles.size();
 
     for (int i = 0; i < frozenParticles; i++) {
@@ -39,6 +46,10 @@ void Simulation::initParticles(std::vector<Particle> initialParticles) {
     for (size_t i = frozenParticles; i < config.numParticles; i++) {
         auto x = rng.generateParticleX();
         auto y = rng.generateParticleY();
+        while (isInsideObstacle(x, y, obstacles)) {
+            x = rng.generateParticleX();
+            y = rng.generateParticleY();
+        }
         h_particles[i].oldX = x;
         h_particles[i].oldY = y;
         h_particles[i].x = x;
@@ -48,6 +59,47 @@ void Simulation::initParticles(std::vector<Particle> initialParticles) {
         h_particles[i].collidedParticleIdx = -1;
     }
 }
+
+void Simulation::setupCudaForceField(float* forceFieldX, float* forceFieldY) {
+        cudaMalloc(&d_forceFieldX, config.width * config.height * sizeof(float));
+        cudaMemcpy(d_forceFieldX, forceFieldX, config.width * config.height * sizeof(float), cudaMemcpyHostToDevice);
+
+        cudaMalloc(&d_forceFieldY, config.width * config.height * sizeof(float));
+        cudaMemcpy(d_forceFieldY, forceFieldY, config.width * config.height * sizeof(float), cudaMemcpyHostToDevice);
+}
+
+
+void Simulation::setupCudaObstacles(std::vector<Obstacle> obstacles) {
+    size_t numObstacles = obstacles.size();
+    
+    auto h_obstacles = new Obstacle[numObstacles];
+    for (int i = 0; i < numObstacles; i++) {
+        h_obstacles[i].xTopLeft = obstacles[i].xTopLeft;
+        h_obstacles[i].yTopLeft = obstacles[i].yTopLeft;
+        h_obstacles[i].recHeight = obstacles[i].recHeight;
+        h_obstacles[i].recWidth = obstacles[i].recWidth;
+    }
+
+    cudaError_t err;
+
+    err = cudaMalloc(&d_obstacles, numObstacles * sizeof(Obstacle));
+    if (err != cudaSuccess) {
+        printf("CUDA error: %s\n", cudaGetErrorString(err));
+        delete[] h_obstacles;
+        return;
+    }
+    
+    err = cudaMemcpy(d_obstacles, h_obstacles, numObstacles * sizeof(Obstacle), cudaMemcpyHostToDevice);
+    if (err != cudaSuccess) {
+        printf("CUDA error: %s\n", cudaGetErrorString(err));
+        cudaFree(d_obstacles);
+        delete[] h_obstacles;
+        return;
+    }
+
+    delete[] h_obstacles;
+}
+
 
 // must be called after initParticles
 void Simulation::setupCuda() {
@@ -77,7 +129,10 @@ void Simulation::step() {
     moveParticlesKernel<<<numBlocks1d, BLOCK_SIZE_1D>>>(
             d_particles,
             config,
-            d_states
+            d_states,
+            d_forceFieldX,
+            d_forceFieldY,
+            d_obstacles
     );
 
     cudaMemset(d_allFrozen, 1, sizeof(bool));  // set d_allFrozen to true

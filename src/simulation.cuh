@@ -8,6 +8,8 @@
 #include "simulation_config.cuh"
 #include "random_engine.cuh"
 #include "particle.cuh"
+#include "obstacle.cuh"
+#include "utils.h"
 #include <vector>
 
 
@@ -28,10 +30,16 @@ class Simulation {
     Particle *d_particles;
     curandState *d_states;
 
+    float *d_forceFieldX;
+    float *d_forceFieldY;
+    Obstacle *d_obstacles;
+
     public:
         explicit Simulation(const SimulationConfig& config);
         ~Simulation();
-        void initParticles(std::vector<Particle> initialParticles);
+        void initParticles(std::vector<Particle> initialParticles, std::vector<Obstacle> obstacles);
+        void setupCudaForceField(float* forceFieldX, float* forceFieldY);
+        void setupCudaObstacles(std::vector<Obstacle> obstacles);
         void setupCuda();
         void step();
         [[nodiscard]] int getCurrentStep() const;

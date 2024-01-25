@@ -7,6 +7,14 @@
   "numParticles": 200,
   "seed": 0,
 
+  "forceRectangles": [
+
+  ],
+
+  "obstacleRectangles": [
+
+  ],
+
   "initialParticles": [
     {
       "x": 200,
