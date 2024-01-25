@@ -1,66 +1,55 @@
 {
-  "width": 400,
-  "height": 400,
+  "width": 800,
+  "height": 800,
   "stickiness": 0.5,
   "moveRadius": 2.0,
   "particleRadius": 4.0,
-  "numParticles": 500,
+  "numParticles": 1000,
   "seed": 0,
 
   "forceRectangles": [
     {
       "xTopLeft": 0,
-      "yTopLeft": 200,
-      "recWidth": 400,
-      "recHeight": 200,
+      "yTopLeft": 0,
+      "recWidth": 800,
+      "recHeight": 400,
       "dragRadius": 0.3,
-      "dragAngle": 4.71
+      "dragAngle": 2.355
     },
     {
       "xTopLeft": 0,
-      "yTopLeft": 0,
-      "recWidth": 200,
-      "recHeight": 200,
+      "yTopLeft": 400,
+      "recWidth": 800,
+      "recHeight": 400,
       "dragRadius": 0.3,
-      "dragAngle": 1.57
+      "dragAngle": 5.495
     }
   ],
 
   "obstacleRectangles": [
-    {
-      "xTopLeft": 200,
-      "yTopLeft": 200,
-      "recWidth": 50,
-      "recHeight": 50
-    },
-    {
-      "xTopLeft": 0,
-      "yTopLeft": 0,
-      "recWidth": 50,
-      "recHeight": 50
-    }
+
   ],
 
   "initialParticles": [
+    {
+      "x": 400,
+      "y": 400
+    },
     {
       "x": 200,
       "y": 200
     },
     {
-      "x": 100,
-      "y": 100
+      "x": 600,
+      "y": 600
     },
     {
-      "x": 300,
-      "y": 300
+      "x": 200,
+      "y": 600
     },
     {
-      "x": 100,
-      "y": 300
-    },
-    {
-      "x": 300,
-      "y": 100
+      "x": 600,
+      "y": 200
     }
   ]
 }

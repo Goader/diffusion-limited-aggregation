@@ -10,11 +10,22 @@
 const SimulationConfig* globalConfig;
 
 
+// const GLchar* vertexShaderSource = R"glsl(
+//     #version 330 core
+//     layout (location = 0) in vec2 position;
+//     void main() {
+//         gl_Position = vec4(position, 0.0, 1.0);
+//         gl_PointSize = 8.0;
+//     }
+// )glsl";
+
 const GLchar* vertexShaderSource = R"glsl(
     #version 330 core
     layout (location = 0) in vec2 position;
+    out vec2 fragPosition; // pass position to fragment shader
     void main() {
         gl_Position = vec4(position, 0.0, 1.0);
+        fragPosition = position;
         gl_PointSize = 8.0;
     }
 )glsl";
@@ -22,16 +33,38 @@ const GLchar* vertexShaderSource = R"glsl(
 
 const GLchar* fragmentShaderSource = R"glsl(
     #version 330 core
+    in vec2 fragPosition; // Received from vertex shader
     out vec4 FragColor;
+
     void main() {
         float radius = 0.5; // normalized radius of the circle
         vec2 center = gl_PointCoord - vec2(0.5, 0.5); // shift point coord to the center
         if (length(center) > radius) {
             discard; // discard fragments outside the radius
         }
-        FragColor = vec4(0.0, 1.0, 0.0, 1.0); // green color
+
+        // Map the position to color
+        float red = (fragPosition.x + 1.0) / 2.0; // Map from [-1, 1] to [0, 1]
+        float green = (fragPosition.y + 1.0) / 2.0; // Map from [-1, 1] to [0, 1]
+        float blue = 0.0; // Static value for blue channel
+
+        FragColor = vec4(red, green, blue, 1.0); // Construct final color
     }
 )glsl";
+
+
+// const GLchar* fragmentShaderSource = R"glsl(
+//     #version 330 core
+//     out vec4 FragColor;
+//     void main() {
+//         float radius = 0.5; // normalized radius of the circle
+//         vec2 center = gl_PointCoord - vec2(0.5, 0.5); // shift point coord to the center
+//         if (length(center) > radius) {
+//             discard; // discard fragments outside the radius
+//         }
+//         FragColor = vec4(0.0, 1.0, 0.0, 1.0); // green color
+//     }
+// )glsl";
 
 
 GLuint compileShader(GLenum type, const GLchar* source) {
@@ -149,15 +182,11 @@ void visualizeSimulation(const std::vector<Particle>& particles, const Simulatio
 
     glUseProgram(shaderProgram);
 
-    const int SKIP_STEPS_SIZE = 8;
+    const int SKIP_STEPS_SIZE = 4;
 
     // Visualization loop
-    for (int step = -1; step <= lastStep + SKIP_STEPS_SIZE && !glfwWindowShouldClose(window); step += SKIP_STEPS_SIZE) {
+    for (int step = -1000; step <= lastStep + SKIP_STEPS_SIZE && !glfwWindowShouldClose(window); step += SKIP_STEPS_SIZE) {
         bool newParticlesAdded = false;
-
-        if (step % 1000 == 0) {
-            std::cout << "Vis step " << step << "   Stack size: " << particleStack.size() << std::endl;
-        }
 
         while (!particleStack.empty() && particleStack.top().frozenAtStep <= step) {
             auto &p = particleStack.top();
